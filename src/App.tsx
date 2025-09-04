@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import 'mapbox-gl/dist/mapbox-gl.css';
 
 import './App.css'
@@ -9,6 +9,7 @@ import News from './News';
 import Projects from './Projects';
 import History from './History';
 import InterestRates from './InterestRates';
+import { useAsyncError } from 'react-router-dom';
 
 function tabSwicher(tab: string) {
   switch (tab) {
@@ -29,13 +30,34 @@ function tabSwicher(tab: string) {
   }
 }
 
+function setSearchParams(tab: string) {
+  window.history.pushState({}, '', tab)
+}
+
+function getSearchParams() {
+  const url = new URL(window.location.href);
+  const path = url.pathname.split("/")
+  //const lat = params.
+  //const lng = params.get("lng")
+  if (path.length > 0) {
+    return path[0]
+  } else {
+    return undefined
+  }
+
+}
+
 function App() {
   const [tab, setTab] = useState("map")
+
+  useEffect(() => {
+    setSearchParams(tab)
+  }, [tab])
 
   return (
     <div id="main-content">
       <Tabs
-        defaultActiveKey="map"
+        defaultActiveKey={getSearchParams()}
         onChange={setTab}
         id="ctl-panel"
         items={[

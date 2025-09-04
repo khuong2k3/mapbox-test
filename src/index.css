@@ -29,7 +29,7 @@ ul {
 }
 
 #ctl-panel {
-  margin: 0 auto; 
+  margin: 0 auto;
 }
 
 .local-info {
@@ -87,3 +87,125 @@ ul {
   padding: 3px;
 }
 
+/* Container for the entire geocoder */
+.mapboxgl-ctrl-geocoder {
+  border: none;
+  /* Remove the old border */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  /* Soft shadow for depth */
+  border-radius: 8px;
+  /* Rounded corners */
+  overflow: hidden;
+  /* Ensures child elements don't spill over */
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Smooth transition for focus effect */
+}
+
+.mapboxgl-control-container {
+  position: absolute;
+  left: 321px;
+}
+
+/* Ant Design uses a box shadow for an elevated feel, rather than a strong border. */
+.mapboxgl-ctrl-geocoder {
+  border: 1px solid #d9d9d9;
+  border-radius: 6px;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.02);
+  transition: all 0.3s cubic-bezier(0.645, 0.045, 0.355, 1);
+}
+
+.mapboxgl-ctrl-geocoder:hover {
+  border-color: #40a9ff;
+}
+
+.mapboxgl-ctrl-geocoder-focused {
+  border-color: #40a9ff;
+  box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+}
+
+/* Style the search input field to look like an Ant Design input. */
+.mapboxgl-ctrl-geocoder--input {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  font-size: 14px;
+  color: #000;
+  background-color: #fff;
+  padding: 8px 12px;
+  border: none;
+  outline: none;
+  height: auto;
+  width: 200px;
+  line-height: 1.5715;
+}
+
+.suggestions {
+  margin: 0;
+  padding: 0;
+}
+
+
+/* Ant Design removes the default focus outline and uses a box shadow instead */
+.mapboxgl-ctrl-geocoder--input:focus {
+  background-color: #fff;
+}
+
+/* Hide the default search icon to match Ant Design's clean look. */
+.mapboxgl-ctrl-geocoder--icon.mapboxgl-ctrl-geocoder--icon-search {
+  display: none;
+}
+
+.mapboxgl-ctrl-geocoder--pin-right {
+  display: none;
+}
+
+/* Style the results dropdown container to match Ant Design's menu. */
+.mapboxgl-ctrl-geocoder--suggestion,
+.mapboxgl-ctrl-geocoder--powered-by,
+.mapbox-gl-geocoder--no-results {
+  background-color: #fff;
+  border: 1px solid #d9d9d9;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  box-shadow: 0 3px 6px -4px rgba(0, 0, 0, 0.12), 0 6px 16px 0 rgba(0, 0, 0, 0.08), 0 9px 28px 8px rgba(0, 0, 0, 0.05);
+  padding: 4px 2px;
+  margin: 0;
+  list-style: none;
+}
+
+/* Style individual result items. */
+.mapboxgl-ctrl-geocoder--suggestion {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif;
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.85);
+  padding: 8px 12px;
+  cursor: pointer;
+  line-height: 1.5715;
+  transition: background-color 0.3s;
+}
+
+/* Hover and active states using Ant Design's primary blue. */
+.mapboxgl-ctrl-geocoder--suggestion:hover,
+.mapboxgl-ctrl-geocoder--suggestion.active {
+  background-color: #e6f7ff;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+/* Remove the border from the last item for a cleaner look. */
+.mapboxgl-ctrl-geocoder--suggestion:last-child {
+  border-bottom: none;
+}
+
+/* Style the clear button to match Ant Design's icons. */
+.mapboxgl-ctrl-geocoder--icon-close {
+  color: rgba(0, 0, 0, 0.25);
+  transition: color 0.3s;
+}
+
+.mapboxgl-ctrl-geocoder--icon-close:hover {
+  color: rgba(0, 0, 0, 0.45);
+}
+
+/* Style for result text (if using a custom render function) */
+.mapboxgl-ctrl-geocoder--result-address {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.45);
+}
