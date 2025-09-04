@@ -1,35 +1,82 @@
 import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import 'mapbox-gl/dist/mapbox-gl.css';
+
 import './App.css'
+import { Tabs } from 'antd'
+import Map from './Map'
+import MapList from './MapList';
+import News from './News';
+import Projects from './Projects';
+import History from './History';
+import InterestRates from './InterestRates';
+
+function tabSwicher(tab: string) {
+  switch (tab) {
+    case "map":
+      return <Map />
+    case "map-list":
+      return <MapList />
+    case "news":
+      return <News />
+    case "projects":
+      return <Projects />
+    case "history":
+      return <History />
+    case "interest":
+      return <InterestRates />
+    default:
+      return <></>
+  }
+}
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [tab, setTab] = useState("map")
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div id="main-content">
+      <Tabs
+        defaultActiveKey="map"
+        onChange={setTab}
+        id="ctl-panel"
+        items={[
+          {
+            id: "map",
+            key: "map",
+            label: "Bản đồ",
+          },
+          {
+            id: "map-list",
+            key: "map-list",
+            label: "Danh Sách bản đồ",
+          },
+          {
+            id: "news",
+            key: "news",
+            label: "Tin tức",
+          },
+          {
+            id: "projects",
+            key: "projects",
+            label: "Dự án",
+          },
+          {
+            id: "history",
+            key: "history",
+            label: "Lịch Sử giá",
+          },
+          {
+            id: "interest",
+            key: "interest",
+            label: "Tính lãi xuất",
+          }
+        ]}
+      />
+      {
+        tabSwicher(tab)
+      }
+    </div>
   )
 }
 
 export default App
+

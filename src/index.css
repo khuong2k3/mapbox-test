@@ -6,6 +6,17 @@
   left: 0;
 }
 
+#main-content {
+  height: 100vh;
+  width: 100vw;
+  display: flex;
+  flex-direction: column;
+}
+
+#map-holder {
+  flex-grow: 1
+}
+
 #map-container {
   height: 100%;
   width: 100%;
@@ -13,25 +24,66 @@
   background-color: lightgrey;
 }
 
+ul {
+  list-style-type: none;
+}
+
+#ctl-panel {
+  margin: 0 auto; 
+}
+
+.local-info {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+  position: absolute;
+  z-index: 1;
+  width: 100%;
+  top: 70px;
+  left: 5px;
+}
+
 .sidebar {
   background-color: rgb(35 55 75 / 90%);
   color: #fff;
   padding: 6px 12px;
   font-family: monospace;
-  z-index: 1;
-  position: absolute;
-  top: 0;
-  left: 0;
-  margin: 12px;
+  /*margin: 12px;*/
   border-radius: 4px;
 }
 
 .reset-button {
-  position: absolute;
-  top: 50px;
-  z-index: 1;
-  left: 12px;
+  /*left: 12px;*/
   padding: 4px 10px;
+  width: 100px;
   border-radius: 10px;
   cursor: pointer;
 }
+
+.icon-ms {
+  width: 20px;
+  height: 20px;
+}
+
+.flex-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.flex-col {
+  display: flex;
+  flex-direction: column;
+}
+
+.gap-10 {
+  gap: 10px;
+}
+
+.zoom-btn {
+  background: #fff;
+  width: fit-content;
+  border-radius: 5px;
+  gap: 2px;
+  padding: 3px;
+}
+
