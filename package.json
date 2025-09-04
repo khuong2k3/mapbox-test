@@ -13,7 +13,7 @@
     "@fortawesome/react-fontawesome": "^3.0.2",
     "@mapbox/mapbox-gl-geocoder": "^5.1.2",
     "antd": "^5.27.2",
-    "mapbox-gl": "^3.14.0",
+    "mapbox-gl": "^3.0.1",
     "mapbox-gl-geocoder": "^2.0.1",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",

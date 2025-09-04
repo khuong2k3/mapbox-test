@@ -9,7 +9,6 @@ import News from './News';
 import Projects from './Projects';
 import History from './History';
 import InterestRates from './InterestRates';
-import { useAsyncError } from 'react-router-dom';
 
 function tabSwicher(tab: string) {
   switch (tab) {
@@ -30,15 +29,33 @@ function tabSwicher(tab: string) {
   }
 }
 
-function setSearchParams(tab: string) {
-  window.history.pushState({}, '', tab)
-}
-
 function getSearchParams() {
   const url = new URL(window.location.href);
+  const params = new URLSearchParams(url.search);
+  const lat = params.get("lat")
+  const lng = params.get("lng")
+  if (!lat || !lng) {
+    return null
+  } else {
+    return params.toString()
+  }
+}
+
+function setSearchParams(tab: string) {
+  //const url = new URL(window.location.href);
+  const params = getSearchParams()
+
+  if (params && tab === "map") {
+    window.history.pushState({}, '', tab + "?" + params)
+  } else {
+    window.history.pushState({}, '', tab)
+  }
+
+}
+
+function getSearchPath() {
+  const url = new URL(window.location.href);
   const path = url.pathname.split("/")
-  //const lat = params.
-  //const lng = params.get("lng")
   if (path.length > 0) {
     return path[0]
   } else {
@@ -57,7 +74,7 @@ function App() {
   return (
     <div id="main-content">
       <Tabs
-        defaultActiveKey={getSearchParams()}
+        defaultActiveKey={getSearchPath()}
         onChange={setTab}
         id="ctl-panel"
         items={[

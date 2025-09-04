@@ -54,7 +54,7 @@ function Map() {
   const [rotate, setRoate] = useState(INITIAL_ROTATE)
   const [onRotating, setOnRoating] = useState(false)
 
-  console.log(tileToLatLon(12, 3261, 2170))
+  //console.log(tileToLatLon(12, 3261, 2170))
 
   useEffect(() => {
     mapboxgl.accessToken = 'pk.eyJ1Ijoia2h1b25nMjAwMyIsImEiOiJjbWY0dHlla3cwOWNwMmtvZ2l6Z3F0c2l1In0.Tro4vKJ4mTqzvciNSEfn-A'
@@ -80,14 +80,25 @@ function Map() {
     mapRef.current.addControl(geocoderRef.current)
 
     mapRef.current.on('load', () => {
+      mapRef.current?.addSource('vn-localtion', {
+        type: 'geojson',
+        data: "./vietnam.geojson"
+      })
+        .addLayer({
+          id: "vn-layer",
+          type: "circle",
+          source: "vn-localtion",
+        })
       mapRef.current?.addSource('image-source', {
         'type': 'raster',
         tiles: [
-          './MAPBOX/{z}/{x}/{y}.png',
+          './mapbox/{z}/{x}/{y}.png',
         ],
+        minzoom: 12,
+        maxzoom: 16,
         tileSize: 256,
-        attribution:
-          '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        //attribution: '<a href="https://www.xweather.com/">Xweather</a>',
+        //'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       })
         .addLayer({
           'id': 'my-raster-layer',
@@ -107,6 +118,7 @@ function Map() {
 
       setSearchParams(mapCenter)
       // update state
+
       setCenter(mapCenter)
       setZoom(mapZoom)
       setRoate(mapRoate)
@@ -118,6 +130,31 @@ function Map() {
       }
     }
   }, [])
+
+  useEffect(() => {
+    const onMouseMove = (e) => {
+      if (onRotating) {
+        console.log(e.movementX)
+        if (e.movementX > 0) {
+          mapRef.current?.setBearing(rotate + 2.0)
+        } else {
+          mapRef.current?.setBearing(rotate - 2.0)
+        }
+      }
+    }
+    const onMouseUp = () => {
+      setOnRoating(false)
+    }
+    document.addEventListener("mousemove", onMouseMove)
+    document.addEventListener("mouseup", onMouseUp)
+    document.addEventListener("mouseleave", onMouseUp)
+
+    return () => {
+      document.removeEventListener("mousemove", onMouseMove)
+      document.removeEventListener("mouseup", onMouseUp)
+      document.removeEventListener("mouseleave", onMouseUp)
+    }
+  }, [onRotating, rotate])
 
   return (
     <div id="map-holder">
@@ -134,11 +171,12 @@ function Map() {
             }}
           />
           <img className='icon-ms' src={Compass}
+            draggable="false"
             style={{
               transform: `rotate(${rotate - 45}deg)`,
             }}
-            onClick={() => {
-              setOnRoating(!onRotating)
+            onMouseDown={() => {
+              setOnRoating(true)
             }}
           />
         </div>
