@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState } from 'react'
+import { useRef, useEffect, useState, type RefObject } from 'react'
 
 import Add from './assets/add.svg'
 import Minus from './assets/minus.svg'
@@ -6,13 +6,14 @@ import Compass from './assets/compass.svg'
 import mapboxgl from 'mapbox-gl'
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import 'mapbox-gl/dist/mapbox-gl.css';
-import { tileToLatLon } from './helper'
+import './Map.css'
+import { Slider, type InputNumberProps } from 'antd'
 
 const INITIAL_CENTER = {
-  lat: 10.762622,
-  lng: 106.660172
+  lat: 10.74,
+  lng: 106.73,
 }
-const INITIAL_ZOOM = 10.12
+const INITIAL_ZOOM = 12.12
 const INITIAL_ROTATE = 0.0
 //const BOUND_VIETNAM = [8.10,  23.24, 102.09, 109.30]
 const BOUND_VIETNAM = [
@@ -44,6 +45,36 @@ function getSearchParams() {
   }
 }
 
+function RasterCtl({ mapRef }: {
+  mapRef: RefObject<mapboxgl.Map | null>
+}) {
+  const [layerOpacity, setInputValue] = useState(0.8)
+
+  const onChange: InputNumberProps['onChange'] = (newValue) => {
+    if (!newValue) {
+      return
+    }
+    setInputValue(newValue as number);
+    mapRef.current?.setPaintProperty('street-layer', 'raster-opacity', newValue as number)
+  };
+
+  return (
+    <div className='raster-ctl'>
+      <div>
+        <div className='raster-header-ctl'>Độ mờ của bản đồ {(layerOpacity * 100.0).toFixed(0)}%</div>
+
+        <Slider
+          min={0.0}
+          max={1.0}
+          onChange={onChange}
+          value={typeof layerOpacity === 'number' ? layerOpacity : 0.8}
+          step={0.01}
+        />
+      </div>
+    </div>
+  )
+}
+
 
 function Map() {
   const mapRef = useRef<mapboxgl.Map>(null)
@@ -53,8 +84,6 @@ function Map() {
   const [zoom, setZoom] = useState(INITIAL_ZOOM)
   const [rotate, setRoate] = useState(INITIAL_ROTATE)
   const [onRotating, setOnRoating] = useState(false)
-
-  //console.log(tileToLatLon(12, 3261, 2170))
 
   useEffect(() => {
     mapboxgl.accessToken = 'pk.eyJ1Ijoia2h1b25nMjAwMyIsImEiOiJjbWY0dHlla3cwOWNwMmtvZ2l6Z3F0c2l1In0.Tro4vKJ4mTqzvciNSEfn-A'
@@ -89,23 +118,22 @@ function Map() {
           type: "circle",
           source: "vn-localtion",
         })
-      mapRef.current?.addSource('image-source', {
+      mapRef.current?.addSource('street-source', {
         'type': 'raster',
         tiles: [
+          //'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
           './mapbox/{z}/{x}/{y}.png',
         ],
         minzoom: 12,
         maxzoom: 16,
         tileSize: 256,
-        //attribution: '<a href="https://www.xweather.com/">Xweather</a>',
-        //'&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       })
         .addLayer({
-          'id': 'my-raster-layer',
+          'id': 'street-layer',
           'type': 'raster',
-          'source': 'image-source', // Match the source ID
+          'source': 'street-source', // Match the source ID
           'paint': {
-            'raster-opacity': 0.8, // Adjust opacity for transparency
+            'raster-opacity': 1.0, // Adjust opacity for transparency
             'raster-fade-duration': 100 // Smooth fade effect when tiles load
           }
         });
@@ -116,8 +144,13 @@ function Map() {
       const mapZoom = mapRef.current.getZoom()
       const mapRoate = mapRef.current.getBearing()
 
-      setSearchParams(mapCenter)
+      //const layer = mapRef.current?.getLayer('my-raster-layer')
+      //if (layer && layer.type === 'raster') {
+      //  layer.paint?.['raster-opacity'] = 0.3
+      //}
+      //
       // update state
+      setSearchParams(mapCenter)
 
       setCenter(mapCenter)
       setZoom(mapZoom)
@@ -159,6 +192,7 @@ function Map() {
   return (
     <div id="map-holder">
       <div className="local-info">
+
         <div className="flex-col zoom-btn">
           <img className="icon-ms" src={Add}
             onClick={() => {
@@ -180,6 +214,7 @@ function Map() {
             }}
           />
         </div>
+        <RasterCtl mapRef={mapRef} />
       </div>
       <div id='map-container' ref={mapContainerRef} />
     </div>

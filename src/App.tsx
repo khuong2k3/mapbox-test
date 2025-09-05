@@ -9,49 +9,19 @@ import News from './News';
 import Projects from './Projects';
 import History from './History';
 import InterestRates from './InterestRates';
+import { Route, Routes, useNavigate } from 'react-router-dom';
 
-function tabSwicher(tab: string) {
-  switch (tab) {
-    case "map":
-      return <Map />
-    case "map-list":
-      return <MapList />
-    case "news":
-      return <News />
-    case "projects":
-      return <Projects />
-    case "history":
-      return <History />
-    case "interest":
-      return <InterestRates />
-    default:
-      return <></>
-  }
-}
-
-function getSearchParams() {
-  const url = new URL(window.location.href);
-  const params = new URLSearchParams(url.search);
-  const lat = params.get("lat")
-  const lng = params.get("lng")
-  if (!lat || !lng) {
-    return null
-  } else {
-    return params.toString()
-  }
-}
-
-function setSearchParams(tab: string) {
-  //const url = new URL(window.location.href);
-  const params = getSearchParams()
-
-  if (params && tab === "map") {
-    window.history.pushState({}, '', tab + "?" + params)
-  } else {
-    window.history.pushState({}, '', tab)
-  }
-
-}
+//function getSearchParams() {
+//  const url = new URL(window.location.href);
+//  const params = new URLSearchParams(url.search);
+//  const lat = params.get("lat")
+//  const lng = params.get("lng")
+//  if (!lat || !lng) {
+//    return null
+//  } else {
+//    return params.toString()
+//  }
+//}
 
 function getSearchPath() {
   const url = new URL(window.location.href);
@@ -66,10 +36,11 @@ function getSearchPath() {
 
 function App() {
   const [tab, setTab] = useState("map")
+  const navigate = useNavigate()
 
   useEffect(() => {
-    setSearchParams(tab)
-  }, [tab])
+    navigate(tab)
+  }, [tab, navigate])
 
   return (
     <div id="main-content">
@@ -110,12 +81,23 @@ function App() {
           }
         ]}
       />
-      {
-        tabSwicher(tab)
-      }
+
+      <Routes>
+        <Route path="/map" element={<Map />} />
+        <Route path="/map-list" element={<MapList />} />
+        <Route path="/news" element={<News />} />
+        <Route path="/projects" element={<Projects />} />
+        <Route path="/history" element={<History />} />
+        <Route path="/interest" element={<InterestRates />} />
+        <Route path="*" element={null} />
+      </Routes>
+
     </div>
   )
 }
 
 export default App
 
+      //{
+      //  tabSwicher(tab)
+      //}

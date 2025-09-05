@@ -1,0 +1,17 @@
+
+
+.raster-ctl {
+  position: absolute;
+  right: 20px;
+  top: 10px;
+  background: #fff;
+
+  padding: 10px;
+  width: 250px;
+  border-radius: 5px;
+}
+
+.raster-header-ctl {
+  display: grid;
+  justify-content: center;
+}
