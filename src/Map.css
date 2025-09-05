@@ -15,3 +15,53 @@
   display: grid;
   justify-content: center;
 }
+
+.marker-locations {
+  border-top: 1px solid wheat;
+  gap: 10px;
+  padding: 5px;
+  padding-top: 10px;
+
+  .marker-location {
+    cursor: pointer;
+  }
+
+}
+
+.custom-marker {
+    /* Set the size of the container */
+    width: 30px;
+    height: 30px;
+    cursor: pointer;
+    /* Center the inner element */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* Add a subtle animation on hover */
+    transition: transform 0.2s ease-in-out;
+}
+
+.custom-marker:hover {
+    transform: scale(1.2);
+}
+
+.marker-circle {
+    /* Define the shape and color of the marker */
+    width: 20px;
+    height: 20px;
+    background-color: #38a169; /* A nice green color */
+    border: 3px solid #fff;
+    border-radius: 50%;
+    /* Add a drop shadow for depth */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.active-marker-circle {
+    background-color: #db2114; /* A nice green color */
+}
+
+.popup-footer {
+  margin-top: 10px;
+}
+
+

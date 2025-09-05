@@ -11,17 +11,9 @@ import History from './History';
 import InterestRates from './InterestRates';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 
-//function getSearchParams() {
-//  const url = new URL(window.location.href);
-//  const params = new URLSearchParams(url.search);
-//  const lat = params.get("lat")
-//  const lng = params.get("lng")
-//  if (!lat || !lng) {
-//    return null
-//  } else {
-//    return params.toString()
-//  }
-//}
+function NotFound() {
+  return (<div>asdf</div>)
+}
 
 function getSearchPath() {
   const url = new URL(window.location.href);
@@ -89,7 +81,7 @@ function App() {
         <Route path="/projects" element={<Projects />} />
         <Route path="/history" element={<History />} />
         <Route path="/interest" element={<InterestRates />} />
-        <Route path="*" element={null} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
 
     </div>

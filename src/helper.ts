@@ -21,3 +21,16 @@ export function tileToLatLon(z: number, x: number, y: number) {
 
     return { lat, lng };
 }
+
+export type Location = {
+    corr: {
+      lat: number,
+      lng: number,
+    },
+    name: string,
+    raster: {
+      id: string,
+      layerId: string,
+      url: string,
+    }
+}

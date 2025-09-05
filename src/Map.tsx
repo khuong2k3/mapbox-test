@@ -8,6 +8,39 @@ import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
 import 'mapbox-gl/dist/mapbox-gl.css';
 import './Map.css'
 import { Slider, type InputNumberProps } from 'antd'
+import type { Location } from './helper'
+import Marker from './components/Marker'
+
+//import { tileToLatLon } from './helper'
+//console.log(tileToLatLon(12, 3261, 1924))
+//console.log(tileToLatLon(12, 3262, 1925))
+
+//10.833305983642491, 
+//106.611328125, 
+//10.746969318459994, 
+//106.69921875
+
+const LOCATIONS: Array<Location> = [
+  {
+    corr: {
+      lat: 10.74,
+      lng: 106.73,
+    },
+    name: "Quận 7, Thành phố Hồ Chí Minh",
+    //bound: undefined,
+    //[
+    //  10.646,
+    //  10.933,
+    //  106.51,
+    //  106.8
+    //],
+    raster: {
+      id: 'distric-7',
+      layerId: 'distric-7-layer',
+      url: './mapbox/{z}/{x}/{y}.png',
+    }
+  }
+]
 
 const INITIAL_CENTER = {
   lat: 10.74,
@@ -55,14 +88,15 @@ function RasterCtl({ mapRef }: {
       return
     }
     setInputValue(newValue as number);
-    mapRef.current?.setPaintProperty('street-layer', 'raster-opacity', newValue as number)
+    LOCATIONS.forEach(location => {
+      mapRef.current?.setPaintProperty(location.raster.layerId, 'raster-opacity', newValue as number)
+    })
   };
 
   return (
     <div className='raster-ctl'>
       <div>
         <div className='raster-header-ctl'>Độ mờ của bản đồ {(layerOpacity * 100.0).toFixed(0)}%</div>
-
         <Slider
           min={0.0}
           max={1.0}
@@ -70,6 +104,27 @@ function RasterCtl({ mapRef }: {
           value={typeof layerOpacity === 'number' ? layerOpacity : 0.8}
           step={0.01}
         />
+      </div>
+
+      <div className='marker-locations flex-col'>
+        {
+          LOCATIONS.map((location) => {
+            return (
+              <div
+                key={location.raster.id}
+                className='marker-location'
+                onClick={() => {
+                  mapRef.current?.flyTo({
+                    center: location.corr,
+                    zoom: INITIAL_ZOOM,
+                  })
+                }}
+              >
+                {location.name}
+              </div>
+            )
+          })
+        }
       </div>
     </div>
   )
@@ -80,10 +135,12 @@ function Map() {
   const mapRef = useRef<mapboxgl.Map>(null)
   const mapContainerRef = useRef<HTMLElement>(null)
   const geocoderRef = useRef<MapboxGeocoder>(null)
-  const [center, setCenter] = useState(INITIAL_CENTER)
+  const [_, setCenter] = useState(INITIAL_CENTER)
   const [zoom, setZoom] = useState(INITIAL_ZOOM)
   const [rotate, setRoate] = useState(INITIAL_ROTATE)
   const [onRotating, setOnRoating] = useState(false)
+  const [activeLocation, setActiveLocation] = useState<Location>(null);
+
 
   useEffect(() => {
     mapboxgl.accessToken = 'pk.eyJ1Ijoia2h1b25nMjAwMyIsImEiOiJjbWY0dHlla3cwOWNwMmtvZ2l6Z3F0c2l1In0.Tro4vKJ4mTqzvciNSEfn-A'
@@ -109,46 +166,55 @@ function Map() {
     mapRef.current.addControl(geocoderRef.current)
 
     mapRef.current.on('load', () => {
-      mapRef.current?.addSource('vn-localtion', {
-        type: 'geojson',
-        data: "./vietnam.geojson"
-      })
-        .addLayer({
-          id: "vn-layer",
-          type: "circle",
-          source: "vn-localtion",
-        })
-      mapRef.current?.addSource('street-source', {
-        'type': 'raster',
-        tiles: [
-          //'https://a.tile.openstreetmap.org/{z}/{x}/{y}.png',
-          './mapbox/{z}/{x}/{y}.png',
-        ],
-        minzoom: 12,
-        maxzoom: 16,
-        tileSize: 256,
-      })
-        .addLayer({
-          'id': 'street-layer',
+      //mapRef.current?.addSource('vn-localtion', {
+      //  type: 'geojson',
+      //  data: "./vietnam.geojson"
+      //})
+      //  .addLayer({
+      //    id: "vn-layer",
+      //    type: "circle",
+      //    source: "vn-localtion",
+      //  });
+
+      LOCATIONS.forEach((location) => {
+        mapRef.current?.addSource(location.raster.id, {
           'type': 'raster',
-          'source': 'street-source', // Match the source ID
-          'paint': {
-            'raster-opacity': 1.0, // Adjust opacity for transparency
-            'raster-fade-duration': 100 // Smooth fade effect when tiles load
-          }
+          tiles: [location.raster.url],
+          minzoom: 12,
+          maxzoom: 16,
+          //bounds: location.bound,
+          tileSize: 256,
         });
-    });
+        //.addLayer({
+        //  'id': location.raster.layerId,
+        //  'type': 'raster',
+        //  'source': location.raster.id, // Match the source ID
+        //  'paint': {
+        //    'raster-opacity': 1.0, // Adjust opacity for transparency
+        //    'raster-fade-duration': 100 // Smooth fade effect when tiles load
+        //  }
+        //});
+      })
+
+
+      //LOCATIONS.forEach((location) => {
+      //  const popUp = new mapboxgl.Popup({offset: 25})
+      //  .setText(location.name)
+      //
+      //  new mapboxgl.Marker({
+      //    //color: "#FFFFFF",
+      //  }).setLngLat([location.corr.lng, location.corr.lat])
+      //    .setPopup(popUp)
+      //    .addTo(mapRef.current);
+      //});
+
+    })
 
     mapRef.current.on('move', () => {
       const mapCenter = mapRef.current.getCenter()
       const mapZoom = mapRef.current.getZoom()
       const mapRoate = mapRef.current.getBearing()
 
-      //const layer = mapRef.current?.getLayer('my-raster-layer')
-      //if (layer && layer.type === 'raster') {
-      //  layer.paint?.['raster-opacity'] = 0.3
-      //}
-      //
       // update state
       setSearchParams(mapCenter)
 
@@ -217,37 +283,18 @@ function Map() {
         <RasterCtl mapRef={mapRef} />
       </div>
       <div id='map-container' ref={mapContainerRef} />
+      {
+        mapRef.current && LOCATIONS.map((location) => {
+          return (
+            <Marker key={location.raster.id} map={mapRef.current} location={location}
+              onClick={() => {
+                setActiveLocation(location)
+              }} />
+          )
+        })
+      }
     </div>
   )
 }
 
 export default Map
-
-
-//mapRef.current.addSource('bla.tile', {
-//  'type': 'raster',
-//  'tiles': ['http://blablabla.bla/{z}/{x}/{y}.png'],
-//  'tileSize': 150
-//})
-//
-//mapRef.current.addLayer({
-//  'id': 'bla',
-//  'type': 'raster',
-//  'source': 'bla.tile'
-//})
-//
-//
-//
-//<div className='flex-col gap-10'>
-//  <div className="sidebar">
-//    Longitude: {center.lng.toFixed(4)} | Latitude: {center.lat.toFixed(4)} | Zoom: {zoom.toFixed(2)}
-//  </div>
-//  <button className='reset-button' onClick={() => {
-//    mapRef.current?.flyTo({
-//      center: INITIAL_CENTER,
-//      zoom: INITIAL_ZOOM,
-//    })
-//  }}>
-//    Reset
-//  </button>
-//</div>

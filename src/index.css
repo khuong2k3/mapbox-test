@@ -75,6 +75,10 @@ ul {
   flex-direction: column;
 }
 
+.flex-end {
+  justify-content: flex-end;
+}
+
 .gap-10 {
   gap: 10px;
 }
