@@ -1,4 +1,4 @@
-import { useRef, useEffect, useState, type RefObject } from 'react'
+import { useRef, useEffect, useState, type RefObject, cache } from 'react'
 
 import Add from './assets/add.svg'
 import Minus from './assets/minus.svg'
@@ -23,8 +23,8 @@ import Marker from './components/Marker'
 const LOCATIONS: Array<Location> = [
   {
     corr: {
-      lat: 10.74,
       lng: 106.73,
+      lat: 10.74,
     },
     name: "Quận 7, Thành phố Hồ Chí Minh",
     //bound: undefined,
@@ -43,8 +43,8 @@ const LOCATIONS: Array<Location> = [
 ]
 
 const INITIAL_CENTER = {
-  lat: 10.74,
   lng: 106.73,
+  lat: 10.74,
 }
 const INITIAL_ZOOM = 12.12
 const INITIAL_ROTATE = 0.0
@@ -57,8 +57,8 @@ const BOUND_VIETNAM = [
 function setSearchParams(center: { lat: number, lng: number }) {
   const url = new URL(window.location.href);
   const params = new URLSearchParams(url.search);
-  params.set("lat", center.lat.toFixed(2).toString())
   params.set("lng", center.lng.toFixed(2).toString())
+  params.set("lat", center.lat.toFixed(2).toString())
   url.search = params.toString();
   //console.log(url.toString())
   window.history.replaceState({}, '', url.toString());
@@ -73,7 +73,7 @@ function getSearchParams() {
     return null
   } else {
     return {
-      lat, lng
+      lng, lat
     }
   }
 }
@@ -87,6 +87,7 @@ function RasterCtl({ mapRef }: {
     if (!newValue) {
       return
     }
+
     setInputValue(newValue as number);
     LOCATIONS.forEach(location => {
       mapRef.current?.setPaintProperty(location.raster.layerId, 'raster-opacity', newValue as number)
@@ -133,17 +134,21 @@ function RasterCtl({ mapRef }: {
 
 function Map() {
   const mapRef = useRef<mapboxgl.Map>(null)
-  const mapContainerRef = useRef<HTMLElement>(null)
-  const geocoderRef = useRef<MapboxGeocoder>(null)
+  const mapContainerRef = useRef<HTMLDivElement>(null)
+  const startGeoRef = useRef<MapboxGeocoder>(null)
+  const endGeoRef = useRef<MapboxGeocoder>(null)
   const [_, setCenter] = useState(INITIAL_CENTER)
   const [zoom, setZoom] = useState(INITIAL_ZOOM)
   const [rotate, setRoate] = useState(INITIAL_ROTATE)
   const [onRotating, setOnRoating] = useState(false)
   const [activeLocation, setActiveLocation] = useState<Location>(null);
+  const [startPoint, setStartPoint] = useState([])
+  const [endPoint, setEndPoint] = useState([])
 
 
   useEffect(() => {
     mapboxgl.accessToken = 'pk.eyJ1Ijoia2h1b25nMjAwMyIsImEiOiJjbWY0dHlla3cwOWNwMmtvZ2l6Z3F0c2l1In0.Tro4vKJ4mTqzvciNSEfn-A'
+    const openrouteserviceApiKey = 'eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6IjI4MTYyODRiM2Y0NDRjMjFhOWY3ZmExNThhYmFmZThmIiwiaCI6Im11cm11cjY0In0='
 
     const paramCenter = getSearchParams()
 
@@ -156,14 +161,44 @@ function Map() {
     });
 
 
-    geocoderRef.current = new MapboxGeocoder({
+    startGeoRef.current = new MapboxGeocoder({
+      accessToken: mapboxgl.accessToken,
+      countries: "vn",
+      placeholder: "Tìm vị trí",
+      flyTo: false,
+      mapboxgl,
+      //mode
+    });
+
+    endGeoRef.current = new MapboxGeocoder({
       accessToken: mapboxgl.accessToken,
       countries: "vn",
       placeholder: "Tìm vị trí",
       mapboxgl,
-    });
+    })
 
-    mapRef.current.addControl(geocoderRef.current)
+    // geocoder-1
+    // geocoder-2
+    document.getElementById('geocoder-1').appendChild(startGeoRef.current.onAdd(mapRef.current))
+    document.getElementById('geocoder-2').appendChild(endGeoRef.current.onAdd(mapRef.current))
+
+    mapRef.current.addControl(new mapboxgl.NavigationControl(), 'bottom-right')
+
+    startGeoRef.current.on("result", (e) => {
+      setStartPoint(e.result.geometry.coordinates)
+      //const apiUrl = `https://api.openrouteservice.org/v2/directions/driving-car?api_key=${openrouteserviceApiKey}&start=${startPoint}&end=${endPoint}`;
+    })
+
+    endGeoRef.current.on("result", (e) => {
+      setEndPoint(e.result.geometry.coordinates)
+    })
+
+    startGeoRef.current.on("clear", () => {
+      setStartPoint([])
+    })
+    endGeoRef.current.on("clear", () => {
+      setEndPoint([])
+    })
 
     mapRef.current.on('load', () => {
       //mapRef.current?.addSource('vn-localtion', {
@@ -185,29 +220,7 @@ function Map() {
           //bounds: location.bound,
           tileSize: 256,
         });
-        //.addLayer({
-        //  'id': location.raster.layerId,
-        //  'type': 'raster',
-        //  'source': location.raster.id, // Match the source ID
-        //  'paint': {
-        //    'raster-opacity': 1.0, // Adjust opacity for transparency
-        //    'raster-fade-duration': 100 // Smooth fade effect when tiles load
-        //  }
-        //});
       })
-
-
-      //LOCATIONS.forEach((location) => {
-      //  const popUp = new mapboxgl.Popup({offset: 25})
-      //  .setText(location.name)
-      //
-      //  new mapboxgl.Marker({
-      //    //color: "#FFFFFF",
-      //  }).setLngLat([location.corr.lng, location.corr.lat])
-      //    .setPopup(popUp)
-      //    .addTo(mapRef.current);
-      //});
-
     })
 
     mapRef.current.on('move', () => {
@@ -226,9 +239,90 @@ function Map() {
     return () => {
       if (mapRef.current) {
         mapRef.current.remove()
+
+        for (const clN of ['geocoder-1', 'geocoder-2']) {
+          console.log(clN)
+          const element = document.getElementById(clN)
+          const childrens = element?.children;
+          if (childrens !== null && typeof childrens !== 'undefined') {
+            childrens.item(0)?.remove()
+          }
+        }
       }
     }
   }, [])
+
+  useEffect(() => {
+    if (startPoint.length !== 0 && endPoint.length !== 0) {
+      getRoute()
+    }
+
+    async function getRoute() {
+      const apiUrl = `https://api.mapbox.com/directions/v5/mapbox/driving/${startPoint[0]},${startPoint[1]};${endPoint[0]},${endPoint[1]}?steps=true&geometries=geojson&access_token=${mapboxgl.accessToken}`;
+
+      try {
+        mapRef.current.removeLayer('route')
+        mapRef.current.removeSource('route')
+      } catch (e) {
+        console.log(e)
+      }
+
+      try {
+        const response = await fetch(apiUrl);
+        const data = await response.json();
+
+        if (!data.routes || data.routes.length === 0) {
+          console.error('No routes found.');
+          return;
+        }
+
+        const route = data.routes[0].geometry;
+
+        // If a route source and layer already exist, remove them
+        if (mapRef.current.getSource('route')) {
+          mapRef.current.removeLayer('route');
+          mapRef.current.removeSource('route');
+        }
+
+        // Add the route as a new source and layer on the map
+        mapRef.current.addSource('route', {
+          'type': 'geojson',
+          'data': {
+            'type': 'Feature',
+            'properties': {},
+            'geometry': route
+          }
+        });
+
+        mapRef.current.addLayer({
+          'id': 'route',
+          'type': 'line',
+          'source': 'route',
+          'layout': {
+            'line-join': 'round',
+            'line-cap': 'round'
+          },
+          'paint': {
+            'line-color': '#2196F3',
+            'line-width': 6
+          }
+        });
+
+        // Fit the map to the route's bounding box
+        const bounds = new mapboxgl.LngLatBounds();
+        route.coordinates.forEach(coord => {
+          bounds.extend(coord);
+        });
+        mapRef.current.fitBounds(bounds, {
+          padding: { top: 50, bottom: 50, left: 50, right: 50 }
+        });
+
+      } catch (error) {
+        console.error('Error fetching route:', error);
+      }
+    }
+
+  }, [startPoint, endPoint])
 
   useEffect(() => {
     const onMouseMove = (e) => {
@@ -258,7 +352,6 @@ function Map() {
   return (
     <div id="map-holder">
       <div className="local-info">
-
         <div className="flex-col zoom-btn">
           <img className="icon-ms" src={Add}
             onClick={() => {
@@ -280,7 +373,11 @@ function Map() {
             }}
           />
         </div>
-        <RasterCtl mapRef={mapRef} />
+        <div id="geocoder-container">
+          <div id="geocoder-1" className="geocoder-input"></div>
+          <div id="geocoder-2" className="geocoder-input"></div>
+        </div>
+
       </div>
       <div id='map-container' ref={mapContainerRef} />
       {
@@ -298,3 +395,4 @@ function Map() {
 }
 
 export default Map
+        //<RasterCtl mapRef={mapRef} />
